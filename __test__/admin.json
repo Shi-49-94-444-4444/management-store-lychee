@@ -1,0 +1,8 @@
+{
+  "email": "admin@example.com",
+  "username": "adminUser",
+  "password": "$2a$10$OM7evaahb8YYeBqHSNLS8eoq6q5nRnUId9tsIeH5pE9sf/v.FmvNW",
+  "_password": "admin123",
+  "phone": "1234567890",
+  "role": "admin"
+}
