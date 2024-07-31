@@ -7,7 +7,10 @@ export interface ITransaction extends Document {
   totalPrice: number;
   createdAt: Date;
   updatedAt: Date;
-  isDelete: boolean;
+  status: 'successful' | 'failed' | 'refunded';
+  reason?: string;
+  refundMoney?: number;
+  refundByUser?: string
 }
 
 const TransactionSchema: Schema<ITransaction> = new Schema({
@@ -23,7 +26,10 @@ const TransactionSchema: Schema<ITransaction> = new Schema({
   totalPrice: { type: Number, required: true },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
-  isDelete: { type: Boolean, required: true, default: false },
+  status: { type: String, enum: ['successful', 'failed', 'refunded'], required: true, default: 'successful' },
+  reason: { type: String },
+  refundMoney: { type: Number },
+  refundByUser: { type: String },
 });
 
 const Transaction = mongoose.models.Transaction || mongoose.model<ITransaction>('Transaction', TransactionSchema);

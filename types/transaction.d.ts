@@ -1,3 +1,5 @@
+import { number } from "yup";
+
 export interface CreateTransactionParams {
     userId: string;
     storeId: string;
@@ -9,6 +11,7 @@ export interface CreateTransactionParams {
         quantity: number;
     }[];
     paymentMethod: boolean;
+    status: string;
 }
 
 export interface TransactionDetail {
@@ -34,5 +37,12 @@ export interface TransactionDetail {
     totalPrice: number
     status?: string
     createdAt: string
-    isDelete: boolean
+    reason?: string
+    refundMoney?: number
+    refundByUser?: string
+}
+
+export interface Refund {
+    price: number
+    reason: string
 }

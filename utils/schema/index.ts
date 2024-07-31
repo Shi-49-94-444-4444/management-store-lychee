@@ -56,6 +56,15 @@ export const postProductSchema = yup.object().shape({
 
 export const stockAddSchema = yup.object().shape({
     quantity: yup.number().required("Không được để trống").min(1, "Số lượng hàng tối thiểu là 1 kg"),
+    price: yup.number().required("Không được để trống").min(10000, "Giá tiền tối thiểu là 10.000VNĐ"),
+})
+
+export const refundSchema = yup.object().shape({
+    price: yup.number().required("Không được để trống").min(10000, "Giá tiền tối thiểu là 10.000VNĐ"),
+    reason: yup.string().
+        required("Lý do không được để trống ").
+        min(10, "Lý do tối thiểu 10 kí tự").
+        max(1000, "Lý do nhiều nhất chỉ được 1000 kí tự"),
 })
 
 export const transferSchema = yup.object().shape({

@@ -48,7 +48,7 @@ interface ManagementReportData {
     createdAt: string,
     action: string,
     totalPrice: number,
-    isDelete: boolean,
+    status: string,
 }
 
 const listTitleManagement = [
@@ -102,10 +102,12 @@ const TableReport: React.FC<TableReportProps> = ({ listItem, currentPage, itemsP
                             <td className="py-3 border-r border-black border-opacity-10">{formatShortTime(item.createdAt)}</td>
                             <td className="py-3 border-r border-black border-opacity-10">Thanh toán</td>
                             <td className="py-3 border-r border-black border-opacity-10">
-                                {item.isDelete ? (
+                                {item.status === "failed" ? (
                                     <span className="text-red-500 font-semibold">Thất Bại</span>
-                                ) : (
+                                ) : item.status === "successful" ? (
                                     <span className="text-green-500 font-semibold">Thành Công</span>
+                                ) : (
+                                    <span className="text-primary-cus font-semibold">Hoàn trả</span>
                                 )}
                             </td>
                             <td className="py-3 border-r border-black border-opacity-10">{formatCurrency(item.totalPrice)}</td>
@@ -123,6 +125,10 @@ const ReportManagement = () => {
         startDate: format(startOfMonth(new Date()), 'yyyy-MM-dd'),
         endDate: format(endOfMonth(new Date()), 'yyyy-MM-dd')
     })
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchTerm(e.target.value)
+    }
 
     const { store } = useContext(GlobalContext) || {}
 
@@ -149,7 +155,7 @@ const ReportManagement = () => {
             acc[date] = 0;
         }
 
-        if (item.isDelete) {
+        if (item.status === 'successful') {
             acc[date] -= parseFloat(item.totalPrice.toString());
         } else {
             acc[date] += parseFloat(item.totalPrice.toString());
@@ -163,7 +169,7 @@ const ReportManagement = () => {
 
     // Tính toán theo loại hành động
     const dataByType = listIncoming?.reduce((acc: any, item) => {
-        const formattedType = item.isDelete ? "Thất bại" : "Thành công";
+        const formattedType = item.status === 'successful' ? "Thành công" : "Hoàn trả";
         const totalPrice = parseFloat(item.totalPrice.toString());
 
         if (!acc[formattedType]) {
@@ -187,7 +193,7 @@ const ReportManagement = () => {
     // Tính tổng số tiền
     const calculateTotal = (listIncoming: ManagementReportData[]) => {
         return listIncoming.reduce((total, item) => {
-            if (!item.isDelete) {
+            if (item.status === 'successful') {
                 total += parseFloat(item.totalPrice.toString());
             }
             return total;
@@ -377,7 +383,7 @@ const ReportManagement = () => {
                 </h1>
                 <div className="flex gap-3 flex-col md:flex-row transition-all duration-500 flex-wrap justify-end">
                     <div className="flex flex-col space-y-1 md:w-auto w-full transition-all duration-500">
-                        <Search value={searchTerm} onChange={setSearchTerm} style="w-full" />
+                        <Search value={searchTerm} onChange={handleInputChange} style="w-full" />
                     </div>
                 </div>
             </div>

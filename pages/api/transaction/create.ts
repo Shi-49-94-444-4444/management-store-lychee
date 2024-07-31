@@ -6,10 +6,10 @@ connectDB();
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'POST') {
-        const { userId, storeId, cart, paymentMethod } = req.body;
+        const { userId, storeId, cart, paymentMethod, status } = req.body;
 
         try {
-            const result = await createTransaction({ userId, storeId, cart, paymentMethod });
+            const result = await createTransaction({ userId, storeId, cart, paymentMethod, status });
 
             if (paymentMethod) {
                 return res.status(200).json({ data: result, message: "Tạo giao dịch thành công" });

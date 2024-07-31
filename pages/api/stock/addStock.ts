@@ -7,8 +7,8 @@ connectDB();
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'POST') {
         try {
-            const { quantity, productId, productionDate, userId } = req.body;
-            const newStock = await addStockToProduct(productId, quantity, productionDate, userId);
+            const { quantity, productId, productionDate, userId, price } = req.body;
+            const newStock = await addStockToProduct(productId, quantity, productionDate, userId, price);
             res.status(200).json({ data: newStock, message: 'Thêm kho hàng thành công' });
         }
         catch (error: any) {

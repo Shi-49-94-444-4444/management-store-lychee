@@ -54,7 +54,7 @@ export const loginInputs = [
 
 export const adminOptions: Option[] = [
     { id: 1, label: "Quản lý tổng", icon: FaHome, case: "/home" },
-    { id: 2, label: "Quản lí người dùng", icon: FaUserFriends, case: "/user-management" },
+    { id: 2, label: "Quản lí nhân viên", icon: FaUserFriends, case: "/user-management" },
     { id: 3, label: "Quản lí chi nhánh", icon: FaUserFriends, case: "/store-management" },
     { id: 4, label: "Quản lí sản phẩm", icon: BsFillFileEarmarkPostFill, case: "/product-management" },
     { id: 5, label: "Quản lí đơn hàng", icon: BsFillFileEarmarkRuledFill, case: "/transaction-management" },
@@ -64,7 +64,7 @@ export const adminOptions: Option[] = [
 export const manageOptions: Option[] = [
     { id: 1, label: "Quản lý tổng", icon: FaHome, case: "/home" },
     { id: 2, label: "Cửa hàng", icon: FaUserFriends, case: "/shop" },
-    { id: 3, label: "Quản lí người dùng", icon: FaUserFriends, case: "/user-management" },
+    { id: 3, label: "Quản lí nhân viên", icon: FaUserFriends, case: "/user-management" },
     { id: 4, label: "Quản lí sản phẩm", icon: BsFillFileEarmarkPostFill, case: "/product-management" },
     { id: 5, label: "Quản lí đơn hàng", icon: BsFillFileEarmarkRuledFill, case: "/transaction-management" },
     { id: 6, label: "Quản lí doanh thu", icon: BsFillFileEarmarkRuledFill, case: "/report-management" },

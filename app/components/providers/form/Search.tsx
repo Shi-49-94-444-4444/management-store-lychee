@@ -2,15 +2,11 @@ import { BiSearch } from "react-icons/bi";
 
 interface SearchProps {
     value: string;
-    onChange: (newValue: string) => void;
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     style?: string;
 }
 
 const Search: React.FC<SearchProps> = ({ value, onChange, style }) => {
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        onChange(e.target.value);
-    }
-
     return (
         <div className={`relative flex items-center w-full h-full ${style}`}>
             <input
@@ -30,7 +26,7 @@ const Search: React.FC<SearchProps> = ({ value, onChange, style }) => {
                 "
                 placeholder="Tìm kiếm"
                 value={value}
-                onChange={handleInputChange}
+                onChange={onChange}
             />
             <div className="absolute top-2 right-3">
                 <BiSearch size={30} />

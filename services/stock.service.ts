@@ -1,8 +1,8 @@
 import axiosInstance from "@/libs/axios";
 
-export const addStockToProductService = async (productId: string, quantity: number, productionDate: string, userId: string) => {
+export const addStockToProductService = async (productId: string, quantity: number, productionDate: string, userId: string, price: number) => {
     try {
-        const response = await axiosInstance.post('/stock/addStock', { productId, quantity, productionDate, userId });
+        const response = await axiosInstance.post('/stock/addStock', { productId, quantity, productionDate, userId, price });
         return response.data;
     } catch (error: any) {
         if (error.response) {
@@ -13,9 +13,9 @@ export const addStockToProductService = async (productId: string, quantity: numb
     }
 };
 
-export const deleteStockService = async (stockId: string) => {
+export const deleteStockService = async (stockId: string, userId: string) => {
     try {
-        const response = await axiosInstance.delete(`/stock/deleteStock?stockId=${stockId}`);
+        const response = await axiosInstance.delete(`/stock/deleteStock?stockId=${stockId}&userId=${userId}`);
         return response.data;
     } catch (error: any) {
         if (error.response) {

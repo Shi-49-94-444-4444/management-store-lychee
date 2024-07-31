@@ -1,5 +1,6 @@
 export interface StockAdd {
     quantity: number
+    price: number
 }
 
 export interface TableStockProps {
@@ -20,6 +21,11 @@ export interface ManageStockData {
     createdAt: string
     updatedAt: string
     isDelete: string
+    user: {
+        _id: string
+        username: string
+    }
+    price: number
     status: string
 }
 

@@ -102,6 +102,10 @@ const HomeManagement = () => {
     const [totalQuantity, setTotalQuantity] = useState<number>(0);
     const [totalTransactionPrice, setTotalTransactionPrice] = useState<number>(0);
 
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchTerm(e.target.value)
+    }
+
     const { store } = useContext(GlobalContext) || {}
 
     const { data: listIncoming, error, isLoading } = useSWR<ManagementHomeData[]>(dateRange.endDate && dateRange.startDate ? `/transaction/filter?storeId=${store ? store.id : ""}&startDate=${dateRange.startDate}&endDate=${dateRange.endDate}` : null, fetcher)
@@ -290,7 +294,7 @@ const HomeManagement = () => {
                 </h1>
                 <div className="flex gap-3 flex-col md:flex-row transition-all duration-500 flex-wrap justify-end">
                     <div className="flex flex-col space-y-1 md:w-auto w-full transition-all duration-500">
-                        <Search value={searchTerm} onChange={setSearchTerm} style="w-full" />
+                        <Search value={searchTerm} onChange={handleInputChange} style="w-full" />
                     </div>
                 </div>
             </div>

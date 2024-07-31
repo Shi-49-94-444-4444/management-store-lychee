@@ -7,8 +7,8 @@ connectDB();
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'DELETE') {
         try {
-            const { stockId } = req.query;
-            await deleteStock(stockId as string);
+            const { stockId, userId } = req.query;
+            await deleteStock(stockId as string, userId as string);
             res.status(200).json({ data: 'Success', message: 'Xóa kho hàng thành công' });
         }
         catch (error: any) {

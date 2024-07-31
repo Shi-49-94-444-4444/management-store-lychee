@@ -160,6 +160,7 @@ const Input: React.FC<InputProps> = ({
                                 outline-none
                                 focus:ring-0
                                 text-base
+                                border-none
                                 py-2
                                 px-4
                                 transition

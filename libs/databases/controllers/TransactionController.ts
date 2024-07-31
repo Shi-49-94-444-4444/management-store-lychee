@@ -3,10 +3,10 @@ import Product from "../models/Product";
 import Transaction, { ITransaction } from "../models/Transaction";
 import { vnpayCreatePayment } from "../services/vnpay";
 import Store from "../models/Store";
-
+import Stock from "../models/Stock";
 
 export const createTransaction = async (input: CreateTransactionParams) => {
-    const { userId, storeId, cart, paymentMethod } = input
+    const { userId, storeId, cart, paymentMethod, status } = input;
     const transactionProducts: any[] = [];
 
     for (const cartItem of cart) {
@@ -22,7 +22,7 @@ export const createTransaction = async (input: CreateTransactionParams) => {
 
         let remainingQuantity = cartItem.quantity;
         const productStocks = product.stocks
-            .filter((stock: any) => !stock.isDelete && new Date(stock.expiryAt) > new Date())
+            .filter((stock: any) => (stock.isDelete !== "returned") && new Date(stock.expiryAt) > new Date())
             .sort((a: any, b: any) => new Date(a.expiryAt).getTime() - new Date(b.expiryAt).getTime());
 
         for (const stock of productStocks) {
@@ -49,7 +49,7 @@ export const createTransaction = async (input: CreateTransactionParams) => {
         store: storeId,
         products: transactionProducts,
         totalPrice,
-        isDelete: true,
+        status,
     });
 
     await transaction.save();
@@ -87,7 +87,7 @@ export const saveTransaction = async (transactionId: string) => {
         await product.save();
     }
 
-    transaction.isDelete = false;
+    transaction.status = 'successful';
     await transaction.save();
 };
 
@@ -97,7 +97,7 @@ export const removeTransaction = async (transactionId: string) => {
         throw new Error(`Giao dịch ${transactionId} không tồn tại`);
     }
 
-    transaction.isDelete = true;
+    transaction.status = 'failed';
     await transaction.save();
 };
 
@@ -137,6 +137,7 @@ export const getFilteredWalletHistory = async (params: FilterParams): Promise<IT
 
     const filter: Record<string, any> = {
         createdAt: { $gte: startDate, $lte: endDate },
+        status: { $ne: 'failed' },
     };
 
     if (storeId) {
@@ -149,4 +150,39 @@ export const getFilteredWalletHistory = async (params: FilterParams): Promise<IT
     } catch (error: any) {
         throw new Error(error.message);
     }
+};
+
+export const createRefundTransaction = async (originalTransactionId: string, refundingUserId: string, price: number, reason: string) => {
+    const originalTransaction = await Transaction.findById(originalTransactionId).populate('products.product products.stock');
+
+    if (!originalTransaction) {
+        throw new Error(`Giao dịch ${originalTransactionId} không tồn tại`);
+    }
+
+    if (originalTransaction.status !== 'successful') {
+        throw new Error('Chỉ có thể hoàn tiền cho giao dịch thành công');
+    }
+
+    originalTransaction.status = 'refunded'
+    originalTransaction.reason = reason
+    originalTransaction.refundMoney = price
+    originalTransaction.refundByUser = refundingUserId
+
+    await originalTransaction.save();
+
+    for (const product of originalTransaction.products) {
+        const stock = await Stock.findById(product.stock);
+        if (stock) {
+            stock.quantity += product.quantity;
+            await stock.save();
+        }
+
+        const prod = await Product.findById(product.product);
+        if (prod) {
+            prod.sale -= product.quantity;
+            await prod.save();
+        }
+    }
+
+    return originalTransaction;
 };

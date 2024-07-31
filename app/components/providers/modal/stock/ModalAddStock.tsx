@@ -35,7 +35,7 @@ const ModalAddStock = () => {
         if (setIsLoadingModal) setIsLoadingModal(true)
 
         if (addStockModal.productId && user) {
-            const res = await addStockToProductService(addStockModal.productId, data.quantity, selectedDate.startDate.toString(), user._id)
+            const res = await addStockToProductService(addStockModal.productId, data.quantity, selectedDate.startDate.toString(), user._id, data.price)
 
             if (res.data == null) {
                 toast.error(res.message, {
@@ -80,6 +80,19 @@ const ModalAddStock = () => {
                         colorInput="w-full bg-[#F5F5F5] text-gray-600 text-xl"
                         id="quantity"
                         name="quantity"
+                        type="number"
+                        register={register}
+                        errors={errors}
+                    />
+                </div>
+                <div className="flex flex-col gap-3 w-full">
+                    <label className="text-gray-600 text-xl font-semibold text-left">
+                        Giá:
+                    </label>
+                    <Input
+                        colorInput="w-full bg-[#F5F5F5] text-gray-600 text-xl"
+                        id="price"
+                        name="price"
                         type="number"
                         register={register}
                         errors={errors}

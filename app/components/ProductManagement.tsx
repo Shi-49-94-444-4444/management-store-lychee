@@ -31,7 +31,6 @@ const listTitleProductManagement = [
 ]
 
 const fetcher = (url: string) => axiosInstance.get(url).then(res => res.data);
-const [supplierData, setSupplierData] = useState<OptionStore | null>(null)
 
 const TableProduct: React.FC<TableProductProps> = ({ listProduct, currentPage, itemsPerPage }) => {
     const [showToggleItemID, setShowToggleItemID] = useState<number | null>(null)
@@ -57,7 +56,7 @@ const TableProduct: React.FC<TableProductProps> = ({ listProduct, currentPage, i
 
     const listAction = [
         { title: "Xem chi tiết sản phẩm", src: (productId: string) => router.push(`/detail-product-management/${productId}`) },
-        { title: "Xóa sản phẩm", src: (productId: string) => deleteProductModal.onOpen(productId, supplierData) },
+        { title: "Xóa sản phẩm", src: (productId: string) => deleteProductModal.onOpen(productId) },
         { title: "Thêm kho hàng", src: (productId: string) => addStockModal.onOpen(productId) },
     ]
 
@@ -91,7 +90,7 @@ const TableProduct: React.FC<TableProductProps> = ({ listProduct, currentPage, i
                             <td className="py-3 border-r border-black border-opacity-10">{totalIndex}</td>
                             <td className="py-3 border-r border-black border-opacity-10">{product.name}</td>
                             <td className="py-3 border-r border-black border-opacity-10">{product.totalStock} kg</td>
-                            <td className="py-3 border-r border-black border-opacity-10">{product.sale}</td>
+                            <td className="py-3 border-r border-black border-opacity-10">{product.sale} kg</td>
                             <td className="py-3 border-r border-black border-opacity-10">{product.supplier.name}</td>
                             <td className="py-3 border-r border-black border-opacity-10">{product.store.name}</td>
                             <td className="py-3 border-r border-black border-opacity-10">{formatShortTime(product.updatedAt)}</td>
@@ -124,6 +123,11 @@ const TableProduct: React.FC<TableProductProps> = ({ listProduct, currentPage, i
 const ProductManagement = () => {
     const router = useRouter()
     const [searchTerm, setSearchTerm] = useState<string>("")
+    const [supplierData, setSupplierData] = useState<OptionStore | null>(null)
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchTerm(e.target.value)
+    }
 
     const { store } = useContext(GlobalContext) || {}
 
@@ -184,7 +188,7 @@ const ProductManagement = () => {
                             />
                         </div>
                         <div className="flex flex-col space-y-1 md:w-auto w-full transition-all duration-500">
-                            <Search value={searchTerm} onChange={setSearchTerm} style="w-full" />
+                            <Search value={searchTerm} onChange={handleInputChange} style="w-full" />
                         </div>
                     </div>
                 </div>

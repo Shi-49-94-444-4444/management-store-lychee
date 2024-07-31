@@ -10,12 +10,16 @@ import ReactPaginate from "react-paginate";
 import axiosInstance from "@/libs/axios";
 import { LoadingFullScreen } from "./providers/loader";
 import { GlobalContext } from "@/contexts";
+import { useRefundModal } from "@/hooks/useTransaction";
+import { FaHistory } from "react-icons/fa";
 
 const fetcher = (url: string) => axiosInstance.get(url).then(res => res.data);
 
 const TransactionManagement = () => {
     const [expandedTransactions, setExpandedTransactions] = useState<{ [key: string]: boolean }>({});
     const { store } = useContext(GlobalContext) || {}
+    const refundModal = useRefundModal()
+    const [isHistory, setIsHistory] = useState(false)
 
     const { data: listTransaction, error, isLoading } = useSWR<TransactionDetail[]>(`/transaction/getAll?storeId=${store ? store.id : ""}`, fetcher)
 
@@ -32,7 +36,8 @@ const TransactionManagement = () => {
 
     const [currentPage, setCurrentPage] = useState(0)
     const itemsPerPage = 5
-    const pageCount = Math.ceil(listTransaction ? listTransaction.length / itemsPerPage : 0)
+    const filterTransaction = listTransaction ? listTransaction.filter((acc) => acc.status !== "failed") : []
+    const pageCount = Math.ceil(!isHistory ? (filterTransaction ? filterTransaction.length / itemsPerPage : 0) : (listTransaction ? listTransaction.length / itemsPerPage : 0))
 
     const handlePageChange = (selectedPage: { selected: number }) => {
         setCurrentPage(selectedPage.selected)
@@ -40,7 +45,7 @@ const TransactionManagement = () => {
 
     const startIndex = currentPage * itemsPerPage
     const endIndex = startIndex + itemsPerPage
-    const visibleItems = listTransaction && listTransaction.length > 0 ? listTransaction.slice(startIndex, endIndex) : []
+    const visibleItems = !isHistory ? (filterTransaction && filterTransaction.length > 0 ? filterTransaction.slice(startIndex, endIndex) : []) : (listTransaction && listTransaction.length > 0 ? listTransaction.slice(startIndex, endIndex) : [])
 
     return (
         <div className="relative flex flex-col px-6 py-10">
@@ -59,6 +64,9 @@ const TransactionManagement = () => {
                 <h1 className="font-semibold md:text-4xl text-3xl flex-shrink-0">
                     Quản lý giao dịch
                 </h1>
+                <button className={`border ${isHistory ? "bg-primary-cus text-white" : "text-primary-cus bg-white"} border-primary-cus p-2 rounded-full`} onClick={() => setIsHistory(!isHistory)}>
+                    <FaHistory size={30} />
+                </button>
             </div>
             {isLoading ? (
                 <div className="h-screen flex items-center justify-center">
@@ -82,13 +90,17 @@ const TransactionManagement = () => {
                                         <div className="text-2xl font-semibold">
                                             Mã đơn hàng: {transaction._id}
                                         </div>
-                                        {!transaction.isDelete ? (
+                                        {transaction.status === "successful" ? (
                                             <div className="text-lg font-semibold text-green-500">
                                                 Thành công
                                             </div>
-                                        ) : (
+                                        ) : transaction.status === "failed" ? (
                                             <div className="text-lg font-semibold text-red-500">
                                                 Thất bại
+                                            </div>
+                                        ) : (
+                                            <div className="text-lg font-semibold text-primary-cus">
+                                                Hoàn trả
                                             </div>
                                         )}
                                     </div>
@@ -124,19 +136,42 @@ const TransactionManagement = () => {
                                                     Tổng số lượng: {getTotalQuantity(transaction)}
                                                 </div>
                                                 <div className="col-span-1">
-                                                    Tổng tiền: {transaction.totalPrice}
+                                                    Tổng tiền: {formatCurrency(transaction.totalPrice)}
                                                 </div>
                                                 <div className="col-span-1">
                                                     Ngày đặt đơn: {formatShortTime(transaction.createdAt)}
                                                 </div>
                                             </div>
                                         </div>
+                                        {transaction.status === "refunded" && (
+                                            <div className="col-span-1 flex flex-col gap-2">
+                                                <div className="text-lg font-semibold">
+                                                    Hoàn tả:
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-2 text-md">
+                                                    <div className="col-span-1">
+                                                        Người thực hiện: {transaction.refundByUser}
+                                                    </div>
+                                                    <div className="col-span-1">
+                                                        Số tiền: {formatCurrency(transaction.refundMoney ?? 0)}
+                                                    </div>
+                                                    <div className="col-span-1">
+                                                        Lý do: {transaction.reason}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="flex flex-row gap-2 justify-between mt-5">
-                                        <div className="flex justify-start">
+                                        <div className="flex justify-start gap-3">
                                             <button className="bg-primary-cus text-white hover:bg-red-500 w-fit px-4 py-2 rounded-md text-lg font-semibold" onClick={() => toggleDropdown(transaction._id)}>
                                                 Xem chi tiết
                                             </button>
+                                            {transaction.status === "successful" && (
+                                                <button className="bg-primary-cus text-white hover:bg-red-500 w-fit px-4 py-2 rounded-md text-lg font-semibold" onClick={() => refundModal.onOpen(transaction._id)}>
+                                                    Hoàn tiền
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 </div>

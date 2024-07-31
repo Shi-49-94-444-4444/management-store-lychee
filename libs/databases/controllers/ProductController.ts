@@ -24,7 +24,6 @@ export const getProductById = async (productId: string): Promise<IProduct | null
     }
 };
 
-
 export const postProduct = async (input: CreateProductInput): Promise<IProduct | null> => {
     try {
         const { name, price, description, supplierName, imageUrl, storeId, userId } = input

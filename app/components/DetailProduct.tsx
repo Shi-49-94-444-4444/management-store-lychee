@@ -5,9 +5,9 @@ import { useOutsideClick } from "@/utils/functions/outSideClickHandler";
 import { useRouter } from "next/router";
 import { useRef, useState } from "react";
 import useSWR from "swr";
-import { formatNoTime, formatShortTime } from "@/utils/format";
+import { formatCurrency, formatNoTime, formatShortTime } from "@/utils/format";
 import { IoMdArrowRoundBack } from "react-icons/io"
-import { FaPlus } from "react-icons/fa";
+import { FaHistory, FaPlus } from "react-icons/fa";
 import axiosInstance from "@/libs/axios";
 import { ManageStockData, TableStockProps } from "@/types/stock";
 import { Product } from "@/types";
@@ -22,7 +22,9 @@ const listTitleDetailProductManagement = [
     { title: "Ngày sản xuất" },
     { title: "Hạn sử dụng" },
     { title: "Ngày nhập kho" },
-    { title: "Lần cập nhật cuối" },
+    { title: "Người nhập" },
+    { title: "Giá" },
+    { title: "Hoạt động" },
     { title: "Trạng thái" },
     { title: "Lựa chọn" },
 ]
@@ -52,7 +54,7 @@ const TableProduct: React.FC<TableStockProps> = ({ listStock, currentPage, items
     useOutsideClick(ref, handleOutsideClick)
 
     const listAction = [
-        { title: "Xóa kho hàng", src: (stockId: string, productId: string) => { deleteStockModal.onOpen(stockId, productId) } },
+        { title: "Trả hàng", src: (stockId: string, productId: string) => { deleteStockModal.onOpen(stockId, productId) } },
         { title: "Chuyển kho hàng", src: (stockId: string, productId: string) => { transferModal.onOpen(stockId, productId) } },
     ]
 
@@ -88,7 +90,23 @@ const TableProduct: React.FC<TableStockProps> = ({ listStock, currentPage, items
                             <td className="py-3 border-r border-black border-opacity-10">{formatNoTime(stock.productionDate)}</td>
                             <td className="py-3 border-r border-black border-opacity-10">{formatNoTime(stock.expiryAt)}</td>
                             <td className="py-3 border-r border-black border-opacity-10">{formatShortTime(stock.createdAt)}</td>
-                            <td className="py-3 border-r border-black border-opacity-10">{formatShortTime(stock.updatedAt)}</td>
+                            <td className="py-3 border-r border-black border-opacity-10">{stock.user.username}</td>
+                            <td className="py-3 border-r border-black border-opacity-10">{formatCurrency(stock.price)}</td>
+                            <td className="py-3 border-r border-black border-opacity-10">
+                                {stock.isDelete === "active" ? (
+                                    <span className="font-semibold text-green-500">
+                                        Hoạt động
+                                    </span>
+                                ) : stock.isDelete === "received" ? (
+                                    <span className="font-semibold text-primary-cus">
+                                        Đã được chuyển
+                                    </span>
+                                ) : (
+                                    <span className="font-semibold text-red-500">
+                                        Hoàn trả
+                                    </span>
+                                )}
+                            </td>
                             <td className="py-3 border-r border-black border-opacity-10">
                                 {stock.status === statusNormal ? (
                                     <span className="font-semibold text-green-500">
@@ -132,6 +150,7 @@ const TableProduct: React.FC<TableStockProps> = ({ listStock, currentPage, items
 
 const DetailProduct = () => {
     const router = useRouter()
+    const [isHistory, setIsHistory] = useState(false)
 
     const addStockModal = useAddStockModal()
 
@@ -142,7 +161,8 @@ const DetailProduct = () => {
 
     const [currentPage, setCurrentPage] = useState(0)
     const itemsPerPage = 13
-    const pageCount = Math.ceil(listManagementStock ? listManagementStock.length / itemsPerPage : 0)
+    const filterManagementStock = listManagementStock ? listManagementStock.filter((acc) => acc.isDelete === "active" || acc.isDelete === "received") : []
+    const pageCount = Math.ceil(!isHistory ? (filterManagementStock ? filterManagementStock.length / itemsPerPage : 0) : (listManagementStock ? listManagementStock.length / itemsPerPage : 0))
 
     const handlePageChange = (selectedPage: { selected: number }) => {
         setCurrentPage(selectedPage.selected)
@@ -150,7 +170,7 @@ const DetailProduct = () => {
 
     const startIndex = currentPage * itemsPerPage
     const endIndex = startIndex + itemsPerPage
-    const visibleItems = listManagementStock && listManagementStock.length > 0 ? listManagementStock.slice(startIndex, endIndex) : []
+    const visibleItems = !isHistory ? (filterManagementStock && filterManagementStock.length > 0 ? filterManagementStock.slice(startIndex, endIndex) : []) : (listManagementStock && listManagementStock.length > 0 ? listManagementStock.slice(startIndex, endIndex) : [])
 
     return (
         <div className="relative flex flex-col px-6 py-10">
@@ -182,15 +202,20 @@ const DetailProduct = () => {
                         {Product?.name}
                     </h1>
                 </div>
-                <div className="flex gap-3 flex-col md:flex-row justify-end flex-wrap transition-all duration-500">
-                    <button className="w-fit flex flex-row gap-2 text-lg items-center justify-center p-2 font-semibold bg-white border border-primary-cus rounded-md text-primary-cus hover:text-white hover:bg-primary-cus" onClick={() => { if (id) addStockModal.onOpen(id.toString()) }}>
-                        <span>
-                            <FaPlus size={30} />
-                        </span>
-                        <span>
-                            Thêm kho hàng
-                        </span>
+                <div className="flex flex-row gap-3 items-center">
+                    <button className={`border ${isHistory ? "bg-primary-cus text-white" : "text-primary-cus bg-white"} border-primary-cus p-2 rounded-full`} onClick={() => setIsHistory(!isHistory)}>
+                        <FaHistory size={30}/>
                     </button>
+                    <div className="flex gap-3 flex-col md:flex-row justify-end flex-wrap transition-all duration-500">
+                        <button className="w-fit flex flex-row gap-2 text-lg items-center justify-center p-2 font-semibold bg-white border border-primary-cus rounded-md text-primary-cus hover:text-white hover:bg-primary-cus" onClick={() => { if (id) addStockModal.onOpen(id.toString()) }}>
+                            <span>
+                                <FaPlus size={30} />
+                            </span>
+                            <span>
+                                Thêm kho hàng
+                            </span>
+                        </button>
+                    </div>
                 </div>
             </div>
             <Context />

@@ -15,8 +15,8 @@ import { mutate } from "swr"
 const ModalCart = () => {
     const cartModal = useCartModal()
     const { setIsLoadingModal, isLoadingModal, cart, setCart, user, store } = useContext(GlobalContext) || {}
-    const newWindowRef = useRef<any>(null)
     const [paymentMethod, setPaymentMethod] = useState(false);
+    const newWindowRef = useRef<any>(null)
     const [windowOpened, setWindowOpened] = useState(false)
 
     const decreaseQuantity = async (productId: string) => {

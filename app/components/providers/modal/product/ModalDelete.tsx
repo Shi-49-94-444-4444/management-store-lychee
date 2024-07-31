@@ -13,7 +13,6 @@ import { deleteProductService } from "@/services/product.service"
 const ModalDeleteProduct = () => {
     const deleteProductModal = useDeleteProductModal()
     const { setIsLoadingModal, isLoadingModal, store } = useContext(GlobalContext) || {}
-    const supplierData = deleteProductModal.supplierData
 
     const handleDeleteProduct = async () => {
         if (setIsLoadingModal) setIsLoadingModal(true)
@@ -33,7 +32,7 @@ const ModalDeleteProduct = () => {
                 position: "top-right"
             })
 
-            mutate(`/product/filter?storeId=${store ? store.id : ""}&supplierId=${supplierData ? supplierData.id : ""}`)
+            mutate(`/product/filter?storeId=${store ? store.id : ""}&supplierId=${""}`)
             deleteProductModal.onClose()
         }
 

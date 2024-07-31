@@ -8,7 +8,8 @@ export interface IStock extends Document {
   createdAt: Date;
   updatedAt: Date;
   expiryAt: Date;
-  isDelete: boolean;
+  price: number; // new attribute
+  isDelete: 'active' | 'received' | 'returned'; // updated attribute
   status: 'normal' | 'near expiry' | 'expired';
   user: mongoose.Types.ObjectId;
 }
@@ -20,7 +21,12 @@ const StockSchema: Schema<IStock> = new Schema({
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
   expiryAt: { type: Date, required: true },
-  isDelete: { type: Boolean, required: true, default: false },
+  price: { type: Number, required: true }, // new field
+  isDelete: {
+    type: String,
+    enum: ['active', 'received', 'returned'],
+    default: 'active'
+  },
   status: {
     type: String,
     enum: ['normal', 'near expiry', 'expired'],
@@ -32,7 +38,7 @@ const StockSchema: Schema<IStock> = new Schema({
 StockSchema.pre<IStock>('save', function (next) {
   const now = new Date();
   const expiryThreshold = new Date(this.expiryAt);
-  expiryThreshold.setDate(expiryThreshold.getDate() - 1); //Hết hạn khi còn 1 ngày
+  expiryThreshold.setDate(expiryThreshold.getDate() - 1);
 
   if (now > this.expiryAt) {
     this.status = 'expired';
@@ -55,13 +61,12 @@ StockSchema.post('save', async function (stock) {
           { product: stock.product },
           { product: stock.product._id }
         ],
-        isDelete: false,
+        isDelete: { $in: ['active', 'received'] },
         status: { $in: ['normal', 'near expiry'] }
       }
     },
     { $group: { _id: '$product', total: { $sum: '$quantity' } } }
   ]);
-
 
   let totalStock = 0;
   if (totalStockQuery.length > 0) {

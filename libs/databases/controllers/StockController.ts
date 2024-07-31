@@ -1,10 +1,11 @@
 import Product, { IProduct } from "../models/Product";
 import Stock, { IStock } from "../models/Stock";
+import Store from "../models/Store";
 import User from "../models/User";
 
 export const getAllStocks = async (productId: string): Promise<IStock[]> => {
     try {
-        const stocks = await Stock.find({ product: productId, isDelete: false }).populate('product');
+        const stocks = await Stock.find({ product: productId }).populate('product').populate('user');
 
         return stocks;
     } catch (error: any) {
@@ -12,7 +13,7 @@ export const getAllStocks = async (productId: string): Promise<IStock[]> => {
     }
 };
 
-export const addStockToProduct = async (productId: string, quantity: number, productionDate: string, userId: string): Promise<IStock> => {
+export const addStockToProduct = async (productId: string, quantity: number, productionDate: string, userId: string, price: number): Promise<IStock> => {
     try {
         const product = await Product.findById(productId);
         if (!product) {
@@ -38,6 +39,7 @@ export const addStockToProduct = async (productId: string, quantity: number, pro
             quantity,
             productionDate: parsedProductionDate,
             expiryAt: expiryAt,
+            price,
             user: userId
         });
 
@@ -53,7 +55,7 @@ export const addStockToProduct = async (productId: string, quantity: number, pro
     }
 };
 
-export const deleteStock = async (stockId: string): Promise<void> => {
+export const deleteStock = async (stockId: string, userId: string): Promise<void> => {
     try {
         const stock = await Stock.findById(stockId);
         if (!stock) {
@@ -64,12 +66,16 @@ export const deleteStock = async (stockId: string): Promise<void> => {
             throw new Error('Kho hàng đã hết hàng');
         }
 
+        if (stock.isDelete !== 'active') {
+            throw new Error('Chỉ có thể trả lại kho hàng ở trạng thái hoạt động');
+        }
+
         const product = await Product.findById(stock.product);
         if (!product) {
             throw new Error('Sản phẩm không tồn tại');
         }
 
-        stock.isDelete = true;
+        stock.isDelete = "returned";
         stock.updatedAt = new Date();
         await stock.save();
 
@@ -130,7 +136,9 @@ export const transferStock = async ({ stockId, quantity, targetStoreId, userId }
                 quantity,
                 productionDate: stock.productionDate,
                 expiryAt: stock.expiryAt,
-                user: userId
+                user: userId,
+                price: stock.price, // copy price from the original stock
+                isDelete: 'received', // new status for received stock
             });
 
             await newStock.save();
@@ -150,12 +158,18 @@ export const transferStock = async ({ stockId, quantity, targetStoreId, userId }
 
             await newProduct.save();
 
+            await Store.findByIdAndUpdate(targetStoreId, {
+                $push: { products: newProduct._id }
+            });
+
             const newStock = new Stock({
                 product: newProduct._id,
                 quantity,
                 productionDate: stock.productionDate,
                 expiryAt: stock.expiryAt,
-                user: userId
+                user: userId,
+                price: stock.price, // copy price from the original stock
+                isDelete: 'received', // new status for received stock
             });
 
             await newStock.save();
@@ -166,9 +180,7 @@ export const transferStock = async ({ stockId, quantity, targetStoreId, userId }
 
         stock.quantity -= quantity;
 
-        if (stock.quantity === 0) {
-            stock.isDelete = true;
-        }
+        stock.isDelete = 'received'
 
         await stock.save();
     } catch (error: any) {

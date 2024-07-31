@@ -118,6 +118,10 @@ const UserManagement = () => {
     const { store, user } = useContext(GlobalContext) || {}
     const registerModal = useRegisterModal()
 
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchTerm(e.target.value)
+    }
+
     const { data: listManageUser, error, isLoading } = useSWR<ManageUserData[]>(!store ? '/user' : `/user/getByStore?storeId=${store.id}`, fetcher)
 
     const filteredUsers = listManageUser && listManageUser.filter(user => user.username && removeVietnameseTones(user.username).includes(removeVietnameseTones(searchTerm)))
@@ -154,7 +158,7 @@ const UserManagement = () => {
                     </h1>
                     <div className="flex gap-3 flex-col md:flex-row justify-end flex-wrap transition-all duration-500">
                         <div className="flex flex-col space-y-1 md:w-auto w-full transition-all duration-500">
-                            <Search value={searchTerm} onChange={setSearchTerm} style="w-full" />
+                            <Search value={searchTerm} onChange={handleInputChange} style="w-full" />
                         </div>
                     </div>
                 </div>

@@ -129,6 +129,10 @@ const StoreManagement = () => {
     const [searchTerm, setSearchTerm] = useState<string>("")
     const addStoreModal = useAddStoreModal()
 
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchTerm(e.target.value)
+    }
+
     const { user } = useContext(GlobalContext) || {}
 
     const { data: listManageStore, error, isLoading } = useSWR<ManageStoreData[]>('/store', fetcher, { refreshInterval: 1000 })
@@ -167,7 +171,7 @@ const StoreManagement = () => {
                     </h1>
                     <div className="flex gap-3 flex-col md:flex-row justify-end flex-wrap transition-all duration-500">
                         <div className="flex flex-col space-y-1 md:w-auto w-full transition-all duration-500">
-                            <Search value={searchTerm} onChange={setSearchTerm} style="w-full" />
+                            <Search value={searchTerm} onChange={handleInputChange} style="w-full" />
                         </div>
                     </div>
                 </div>
